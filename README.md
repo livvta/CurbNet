@@ -1,72 +1,224 @@
-# CurbNet
+
 ## CurbNet: Curb Detection Framework Based on LiDAR Point Cloud Segmentation
-[![arxiv paper](https://img.shields.io/badge/arXiv-Paper-red)](https://arxiv.org/abs/2403.16794)
-<br>
 
-### Method:
-**Curb detection challenges and our proposed method.** Three main challenges of curb detection are shown (a) height feature extraction (b) different density distribution of point clouds (c) Curb point cloud quantity proportion imbalance. Solution: First propose a 3D-Curb dataset. The MSCA module is designed for multi-scale spatial feature fusion and height feature extraction. The loss group is proposed to solve the imbalance problem. Finally, we use post-processing to further improve performance.
-
-<img src="https://github.com/guoyangzhao/CurbNet/blob/main/images/cover-figure527.png" width="40%" height="auto">
-
-### Framework:
-
-<img src="https://github.com/guoyangzhao/CurbNet/blob/main/images/framework527.png" width="60%" height="auto">
-
-### Detection Results in SemanticKITTI Dataset:
-
-<img src="https://github.com/guoyangzhao/CurbNet/blob/main/images/3Dcurb-no-occ2.png" width="50%" height="auto">
+[![arXiv](https://img.shields.io/badge/arXiv-2403.16794-b31b1b?style=flat-square&logo=arxiv)](https://arxiv.org/abs/2403.16794)
+[![PR's Welcome](https://img.shields.io/badge/PRs-welcome-red.svg?style=flat)](https://github.com/guoyangzhao/CurbNet/pulls)
 
 
-## 3D-Curb Datasets:
-We have developed and proposed the **3D-Curb dataset** based on the large-scale, open-source **SemanticKITTI dataset**, adding a new curb category with 3D label, while retaining the other original 28 semantic categories. This dataset was collected using a 64-line LiDAR, providing a comprehensive view of various street scenes as a universal autonomous driving dataset.
+---
 
-<img src="https://github.com/guoyangzhao/CurbNet/blob/main/images/Dataset_construct527.png" width="50%" height="auto">
+## 📌 Overview
 
-- Our dataset can be visualized using SemanticKITTI **[API](https://github.com/PRBonn/semantic-kitti-api)**
+Curb detection is a critical task in autonomous driving and robotic perception, enabling accurate understanding of road boundaries and drivable areas.
 
-- You can download the 3D-Curb dataset through Baidu Netdisk **[HERE](https://pan.baidu.com/s/1YKtiCdgugzTxHD6dTpXNHQ)**, and the extraction code is 1234. Or from Google Drive **[HERE](https://drive.google.com/file/d/18rK1TE96SfWMi2GjK0RO1U4UPxumA1-E/view?usp=sharing)**
+However, it remains challenging due to:
+- (a) Difficulty in extracting **height-aware geometric features**
+- (b) **Non-uniform density distribution** of LiDAR point clouds
+- (c) Severe **class imbalance** between curb and non-curb points
 
-- The annotation of the 3D-Curb dataset is based on the SemanticKITTI format. The point cloud file is stored in the **.bin** file and the label is in the corresponding **.label** file.
+To address these challenges, we propose **CurbNet**, a LiDAR-based curb detection framework with:
+
+- A newly constructed **3D-Curb dataset**
+- A **Multi-Scale Channel Attention (MSCA)** module for feature fusion and height modeling
+- A **loss group strategy** to handle class imbalance
+- A **post-processing refinement module** for improved prediction quality
 
 
-### Attention: 
 
-Because the Curb category is additionally added, we set the Curb labels category to 3. Therefore, when using API visualization, please add **3: "curb"** to **label:** in **config/semantic-kitti.yaml** to increase the visualization of curb.
+## 🧠 Framework
+
+<img src="https://github.com/guoyangzhao/CurbNet/blob/main/images/framework527.png" width="65%">
 
 
-### Data organization:
+## 📊 Detection Results
 
-The data is organized in the following format:
+### SemanticKITTI Benchmark
+
+<img src="https://github.com/guoyangzhao/CurbNet/blob/main/images/3Dcurb-no-occ2.png" width="55%">
+
+
+
+## 🗂️ Dataset: 3D-Curb
+
+We construct the **3D-Curb dataset** based on the large-scale **SemanticKITTI dataset**, with the following features:
+
+- Add a **new curb category (label = 3)** with full 3D annotations
+- Preserve original **28 semantic classes**
+- Captured using **64-line LiDAR**
+- Designed for **urban autonomous driving scenarios**
+
+<img src="https://github.com/guoyangzhao/CurbNet/blob/main/images/Dataset_construct527.png" width="55%">
+
+
+
+### 📥 Download
+
+- **Baidu Netdisk**: [Download Link](https://pan.baidu.com/s/1YKtiCdgugzTxHD6dTpXNHQ) (Code: 1234)  
+- **Google Drive**: [Download Link](https://drive.google.com/file/d/18rK1TE96SfWMi2GjK0RO1U4UPxumA1-E/view?usp=sharing)
+
+
+
+### 📦 Data Format
+
+The dataset follows the **SemanticKITTI format**:
 
 ```
+
 /kitti/dataset/
-          └── sequences/
-                  ├── 00/
-                  │   ├── labels/
-                  │   │     ├ 000000.label
-                  │   │     └ 000001.label
-                  │   └── velodyne/
-                  │         ├ 000000.bin
-                  │         └ 000001.bin
-                  ├── 01/
-                  ├── 02/
-                  .
-                  └── 10/
+└── sequences/
+├── 00/
+│   ├── labels/
+│   │     ├ 000000.label
+│   │     └ 000001.label
+│   └── velodyne/
+│         ├ 000000.bin
+│         └ 000001.bin
+├── 01/
+├── 02/
+...
+└── 10/
+
 ```
 
-### NRS Dataset: 
+- Point clouds: `.bin`
+- Labels: `.label`
 
-The original NRS dataset mentioned in the paper only has 2D labels. We project the 2D labels onto a 3D point cloud for processing and convert the data format to the same as SemanticKITTI. We have also made the processed NRS dataset public and can also be downloaded from Baidu Netdisk **[HERE](https://pan.baidu.com/s/1U6b5c6TxfruNT572_vwLYA)**, and the extraction code is 1234. Or from Google Drive **[HERE](https://drive.google.com/file/d/1kAj1xEHnppwrg2zLp42rCsLL8439glhy/view?usp=sharing)**
 
-## Citations:
-If you find CurbNet or 3D-Curb Dataset useful in your research or applications, please consider giving us a star 🌟 and citing it.
+
+### ⚠️ Important Note
+
+Since **curb is an additional category**, we assign:
+
+```
+
+label: 3 → "curb"
+
+```
+
+To visualize correctly using SemanticKITTI API, please modify:
+
+```
+
+config/semantic-kitti.yaml
+
+```
+
+Add:
+
+```
+
+3: "curb"
+
+```
+
+
+
+### 🔧 Visualization Tool
+
+We recommend using the official SemanticKITTI API:
+
+👉 https://github.com/PRBonn/semantic-kitti-api
+
+
+
+## 📁 Additional Dataset: NRS
+
+The original **NRS dataset** contains only 2D annotations.
+
+We:
+- Project 2D labels to **3D point clouds**
+- Convert format to **SemanticKITTI style**
+- Release processed version for public use
+
+### 📥 Download
+
+- **Baidu Netdisk**: [Download Link](https://pan.baidu.com/s/1U6b5c6TxfruNT572_vwLYA) (Code: 1234)  
+- **Google Drive**: [Download Link](https://drive.google.com/file/d/1kAj1xEHnppwrg2zLp42rCsLL8439glhy/view?usp=sharing)
+
+
+---
+
+
+## ⚙️ Installation
+
+### Requirements
+
+- Python ≥ 3.7
+- PyTorch ≥ 1.2
+- yaml
+- Cython
+- [torch-scatter](https://github.com/rusty1s/pytorch_scatter)
+- [spconv](https://github.com/traveller59/spconv) (tested with `spconv==1.2.1`, `cuda==10.2`)
+- [nuScenes-devkit](https://github.com/nutonomy/nuscenes-devkit) *(optional)*
+
+
+
+## 🚀 Training
+
+1. Modify config file:
+
+```
+
+config/semantickitti-curb_0.2.yaml
+
+````
+
+2. Start training:
+
+```bash
+sh train_0.2.sh
+````
+
+
+
+## 🎯 Inference Demo
+
+### Run demo on a folder of LiDAR scans:
+
+```bash
+python demo_folder_focal.py \
+    --demo-folder YOUR_FOLDER \
+    --save-folder YOUR_SAVE_FOLDER
+```
+
+### With labels (optional):
+
+```bash
+python demo_folder_focal.py \
+    --demo-folder YOUR_FOLDER \
+    --save-folder YOUR_SAVE_FOLDER \
+    --demo-label-folder YOUR_LABEL_FOLDER
+```
+
+---
+
+## ⭐ Citation
+
+If you find this project useful, please consider giving a ⭐ and citing our work:
 
 ```bibtex
-@article{zhao2024curbnet,
-  title={CurbNet: Curb Detection Framework Based on LiDAR Point Cloud Segmentation},
-  author={Zhao, Guoyang and Ma, Fulong and Liu, Yuxuan and Qi, Weiqing and Liu, Ming and Ma, Jun},
-  journal={arXiv preprint arXiv:2403.16794},
-  year={2024}
+@article{zhao2025curbnet,
+  title={CurbNet: Curb detection framework based on LiDAR point cloud segmentation},
+  author={Zhao, Guoyang and Ma, Fulong and Qi, Weiqing and Liu, Yuxuan and Liu, Ming and Ma, Jun},
+  journal={IEEE Transactions on Intelligent Transportation Systems},
+  year={2025},
+  publisher={IEEE}
 }
 ```
 
+
+
+## 📬 Contact
+
+If you have any questions or suggestions, feel free to open an issue or contact the authors.
+
+
+
+## 🌟 Acknowledgements
+
+This project is built upon:
+
+* SemanticKITTI dataset
+* Open-source LiDAR perception frameworks [Cylinder3D](https://github.com/xinge008/Cylinder3D)
+
+We thank the community for their contributions.
