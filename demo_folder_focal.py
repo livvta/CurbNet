@@ -150,6 +150,7 @@ def main(args):
             demo_grid_ten = [torch.from_numpy(i).to(pytorch_device) for i in demo_grid]
             demo_label_tensor = demo_vox_label.type(torch.LongTensor).to(pytorch_device)
 
+            demo_batch_size = demo_label_tensor.shape[0]
             predict_labels = my_model(demo_pt_fea_ten, demo_grid_ten, demo_batch_size)
             loss = lovasz_softmax(torch.nn.functional.softmax(predict_labels).detach(), demo_label_tensor,
                                   ignore=0) + loss_func(predict_labels.detach(), demo_label_tensor)
@@ -211,4 +212,3 @@ if __name__ == '__main__':
     print(' '.join(sys.argv))
     print(args)
     main(args)
-

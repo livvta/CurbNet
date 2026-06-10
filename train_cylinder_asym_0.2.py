@@ -79,7 +79,7 @@ def main(args):
     my_model = model_builder.build(model_config)
     if os.path.exists(model_load_path):
         my_model = load_checkpoint(model_load_path, my_model)
-    
+
 
     
     my_model.to(pytorch_device)
@@ -100,12 +100,16 @@ def main(args):
     my_model.train()
     global_iter = 0
     check_iter = train_hypers['eval_every_n_steps']
+    
+    # 梯度累积参数
+    accumulation_steps = 3  # 累积3步后更新，相当于batch_size*3的效果
 
     while epoch < train_hypers['max_num_epochs']:
 
         loss_list = []
         pbar = tqdm(total=len(train_dataset_loader))
         time.sleep(10)
+        optimizer.zero_grad()  # epoch开始时初始化梯度
         # lr_scheduler.step(epoch)
         for i_iter, (_, train_vox_label, train_grid, _, train_pt_fea) in enumerate(train_dataset_loader):
             
@@ -158,14 +162,21 @@ def main(args):
             point_label_tensor = train_vox_label.type(torch.LongTensor).to(pytorch_device)
             train_batch_size = train_vox_label.shape[0]
 
-            # forward + backward + optimize
+            # forward + backward + optimize (with gradient accumulation)
             outputs = my_model(train_pt_fea_ten, train_vox_ten, train_batch_size)
 
             loss = lovasz_softmax(torch.nn.functional.softmax(outputs), point_label_tensor, ignore=0) + loss_func(
                 outputs, point_label_tensor)
-            loss.backward()
-            optimizer.step()
+
+            # 梯度累积：loss除以累积步数
+            loss_scaled = loss / accumulation_steps
+            loss_scaled.backward()
             loss_list.append(loss.item())
+
+            # 累积足够的步数后更新参数
+            if (i_iter + 1) % accumulation_steps == 0:
+                optimizer.step()
+                optimizer.zero_grad()
 
             if global_iter % 1000 == 0:
                 if len(loss_list) > 0:
@@ -174,7 +185,6 @@ def main(args):
                 else:
                     print('loss error')
 
-            optimizer.zero_grad()
             pbar.update(1)
             global_iter += 1
             if global_iter % check_iter == 0:
@@ -183,6 +193,11 @@ def main(args):
                           (epoch, i_iter, np.mean(loss_list)))
                 else:
                     print('loss error')
+
+        if len(train_dataset_loader) % accumulation_steps != 0:
+            optimizer.step()
+            optimizer.zero_grad()
+
         pbar.close()
         epoch += 1
 
