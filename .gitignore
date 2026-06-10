@@ -1,0 +1,13 @@
+data/
+3D-Curb-Dataset-all.zip
+Lcdet-NRS-Dataset.zip
+*.pdf
+*.pt
+*.pth
+*.ckpt
+logs_dir/*.txt
+.vscode/settings.json
+*.pyc
+*.nbc
+*.nbi
+__pycache__/
