@@ -1,0 +1,46 @@
+IEEE TRANSACTIONS ON INTELLIGENT TRANSPORTATION SYSTEMS
+13
+REFERENCES
+[1] T. Luettel, M. Himmelsbach, and H.-J. Wuensche, “Autonomous ground vehicles—concepts and a path to the future,” Proceedings of the IEEE, vol. 100, no. Special Centennial Issue, pp. 1831–1839, 2012.
+[2] F. Ma, X. Yan, Y. Liu, and M. Liu, “Every dataset counts: Scaling up monocular 3D object detection with joint datasets training,” arXiv preprint arXiv:2310.00920, 2023.
+[3] Z. Xu, Y. Sun, and M. Liu, “Icub: Imitation learning-based detection of road curbs using aerial images for autonomous driving,” IEEE Robotics and Automation Letters, vol. 6, no. 2, pp. 1097–1104, 2021.
+[4] J. K. Suhr, J. Jang, D. Min, and H. G. Jung, “Sensor fusion-based low-cost vehicle localization system for complex urban environments,” IEEE Transactions on Intelligent Transportation Systems, vol. 18, no. 5, pp. 1078–1086, 2016.
+[5] A. Y. Hata, F. T. Ramos, and D. F. Wolf, “Monte carlo localization on gaussian process occupancy maps for urban environments,” IEEE Transactions on Intelligent Transportation Systems, vol. 19, no. 9, pp. 2893–2902, 2017.
+[6] L. M. Romero, J. A. Guerrero, and G. Romero, “Road curb detection: A historical survey,” Sensors, vol. 21, no. 21, p. 6952, 2021.
+[7] A. B. Hillel, R. Lerner, D. Levi, and G. Raz, “Recent progress in road and lane detection: a survey,” Machine Vision and Applications, vol. 25, no. 3, pp. 727–745, 2014.
+[8] P. Sun, X. Zhao, Z. Xu, R. Wang, and H. Min, “A 3D lidar data-based dedicated road boundary detection algorithm for autonomous vehicles,” IEEE Access, vol. 7, pp. 29,623–29,638, 2019.
+[9] C. Wei, H. Li, J. Shi, G. Zhao, H. Feng, and L. Quan, “Row anchor selection: classification method for early-stage crop row-following,” Computers and Electronics in Agriculture, vol. 192, p. 106577, 2022.
+[10] G. Zhao, Y. Liu, W. Qi, F. Ma, M. Liu, and J. Ma, “Fisheyedepth: A real scale self-supervised depth estimation model for fisheye camera,” arXiv preprint arXiv:2409.15054, 2024.
+[11] F. Ma, S. Wang, and M. Liu, “An automatic multi-fidlar extrinsic calibration algorithm using corner planes,” in 2022 IEEE International Conference on Robotics and Biomimetics, 2022, pp. 235–240.
+[12] S. O. Demir, T. E. Ertop, A. B. Koku, and E. I. Konukseven, “An adaptive approach for road boundary detection using 2d lidar sensor,” in 2017 IEEE International Conference on Multisensor Fusion and Integration for Intelligent Systems, 2017, pp. 206–211.
+[13] E. Horváth, C. Pozna, and M. Unger, “Real-time lidar-based urban road and sidewalk detection for autonomous vehicles,” Sensors, 2021.
+[14] G. Wang, J. Wu, R. He, and B. Tian, “Speed and accuracy tradeoff for lidar data based road boundary detection,” IEEE/CAA Journal of Automatica Sinica, vol. 8, no. 6, pp. 1210–1220, 2020.
+[15] T. Chen, B. Dai, D. Liu, J. Song, and Z. Liu, “Velodyne-based curb detection up to 50 meters away,” in 2015 IEEE Intelligent Vehicles Symposium, 2015, pp. 241–248.
+[16] A. Y. Hata, F. S. Osorio, and D. F. Wolf, “Robust curb detection and vehicle localization in urban environments,” in 2014 IEEE Intelligent Vehicles Symposium Proceedings, 2014, pp. 1257–1261.
+[17] L. Zhou and G. Vosselman, “Mapping curbshores in airborne and mobile laser scanning data,” International Journal of Applied Earth Observation and Geoinformation, vol. 18, pp. 293–304, 2012.
+[18] S. Xu, R. Wang, and H. Zheng, “Road curb extraction from mobile lidar point clouds,” IEEE Transactions on Geoscience and Remote Sensing, vol. 55, no. 2, pp. 996–1009, 2016.
+[19] Y. Zhang, J. Wang, X. Wang, and J. M. Dolan, “Road-segmentation-based curb detection method for self-driving via a 3D-LiDAR sensor,” IEEE Transactions on Intelligent Transportation Systems, vol. 19, no. 12, pp. 3981–3991, 2018.
+[20] B. Qin, Z. Chong, T. Bandyopadhyay, M. H. Ang, E. Frazzoli, and D. Rus, “Curb-intersection feature based monte carlo localization on urban roads,” in 2012 IEEE International Conference on Robotics and Automation, 2012, pp. 2640–2646.
+[21] W. Qi, G. Zhao, F. Ma, L. Zheng, and M. Liu, “Clrkdnet: Speeding up lane detection with knowledge distillation,” arXiv preprint arXiv:2405.12503, 2024.
+[22] G. Zhao, L. Quan, H. Li, H. Feng, S. Li, S. Zhang, and R. Liu, “Real-time recognition system of soybean seed full-surface defects based on deep learning,” Computers and Electronics in Agriculture, vol. 187, p. 106230, 2021.
+[23] Z. Xu, Y. Sun, L. Wang, and M. Liu, “Cp-loss: Connectivity-preserving loss for road curb detection in autonomous driving with aerial images,” in 2021 IEEE/RSJ International Conference on Intelligent Robots and Systems, 2021, pp. 1117–1123.
+[24] Y. Jung, M. Jeon, C. Kim, S.-W. Seo, and S.-W. Kim, “Uncertainty-aware fast curb detection using convolutional networks in point clouds,” in 2021 IEEE International Conference on Robotics and Automation, 2021, pp. 12882–12888.
+[25] T. Suleymanov, L. Kunze, and P. Newman, “Online inference and detection of curbs in partially occluded scenes with sparse lidar,” in 2019 IEEE Intelligent Transportation Systems Conference, 2019, pp. 2693–2700.
+[26] J. Gao, H. Jie, B. Xu, L. Liu, J. Hu, and W. Liu, “Lcdet: Lidar curb detection network with transformer,” in 2023 International Joint Conference on Neural Networks, 2023, pp. 1–9.
+[27] J. L. Apellániz, M. García, N. Araniuelo, J. Barandián, and M. Nieto, "Lidar-based curb detection for ground truth annotation in automated driving validation," arXiv preprint arXiv:2212.00544, 2023.
+[28] D. Zai, J. Li, Y. Guo, M. Cheng, Y. Lin, H. Luo, and C. Wang, “3-d road boundary extraction from mobile laser scanning data via supervoxels and graph cuts,” IEEE Transactions on Intelligent Transportation Systems, vol. 19, no. 3, pp. 802–813, 2017.
+[29] U. Ozertem and D. Erdogmus, “Locally defined principal curves and surfaces,” The Journal of Machine Learning Research, 2011.
+[30] H. Jie, J. Guo, Q. Zhao, Z. Ning, J. Hu, L. Liu, and W. Liu, “An efficient curb detection and tracking method for intelligent vehicles via a high-resolution 3D-LiDAR,” in 4th International Conference on Information Science, Electrical, and Automation Engineering, vol. 12257, 2022, pp. 310–317.
+[31] W. Yao, Z. Deng, and L. Zhou, “Road curb detection using 3D lidar and integral laser points for intelligent vehicles,” in The 6th International Conference on Soft Computing and Intelligent Systems, and The 13th International Symposium on Advanced Intelligence Systems, 2012, pp. 100–105.
+[32] J. Zhang, S. Singh et al., “Loam: Lidar odometry and mapping in real-time,” in Robotics: Science and systems, vol. 2, no. 9, 2014, pp. 1–9.
+[33] A. Y. Hata and D. F. Wolf, “Feature detection for vehicle localization in urban environments using a multilayer lidar,” IEEE Transactions on Intelligent Transportation Systems, vol. 17, no. 2, pp. 420–429, 2015.
+[34] B. Yang, L. Fang, and J. Li, “Semi-automated extraction and delineation of 3D roads of street scene from mobile laser scanning point clouds,” ISPRS Journal of Photogrammetry and Remote Sensing, vol. 79, pp. 80–93, 2013.
+[35] D. Bai, T. Cao, J. Guo, and B. Liu, “How to build a curb dataset with lidar data for autonomous driving,” in 2022 International Conference on Robotics and Automation, 2022, pp. 2576–2582.
+[36] J. Liang, N. Homayounfar, W.-C. Ma, S. Wang, and R. Urtasun, "Convolutional recurrent network for road boundary extraction," in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2019, pp. 9512-9521.
+[37] O. Ronneberger, P. Fischer, and T. Brox, “U-net: Convolutional networks for biomedical image segmentation,” in Medical Image Computing and Computer-Assisted Intervention-MICCAI 2015: 10th International Conference, Munich, Germany, October 5-9, 2015, Proceedings, Part III 18, 2015, pp. 234–241.
+[38] X. Pan, J. Shi, P. Luo, X. Wang, and X. Tang, “Spatial as deep: Spatial cnn for traffic scene understanding,” in Proceedings of the AAAI Conference on Artificial Intelligence, vol. 32, no. 1, 2018.
+[39] D. Kukolj, I. Marinović, and S. Menet, “Road edge detection based on combined deep learning and spatial statistics of lidar data,” Journal of Spatial Science Research, vol. 68, no. 2, pp. 245–259, 2023.
+[40] O. Çiçek, A. Abdulkadir, S. S. Lienkamp, T. Brox, and O. Ronneberger, “3D u-net: learning dense volumetric segmentation from sparse annotation,” in Medical Image Computing and Computer-Assisted Intervention–MICCAI 2016: 19th International Conference, Athens, Greece, October 17-21, 2016, Proceedings, Part II 19, 2016, pp. 424–432.
+[41] H. Zhou, X. Zhu, X. Song, Y. Ma, Z. Wang, H. Li, and D. Lin, “Cylinder3D: An effective 3D framework for driving-scene lidar semantic segmentation,” arXiv preprint arXiv:2008.01550, 2020.
+[42] Y. Hou, X. Zhu, Y. Ma, C. C. Loy, and Y. Li, “Point-to-voxel knowledge distillation for lidar semantic segmentation,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2022, pp. 8479–8488.
+[43] H. Caesar, V. Bankiti, A. H. Lang, S. Vora, V. E. Liong, Q. Xu, A. Krishnan, Y. Pan, G. Baldan, and O. Beijbom, “nuscenes: A multimodal dataset for autonomous driving,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2020, pp. 11621–11631.

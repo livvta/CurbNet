@@ -1,0 +1,36 @@
+IEEE TRANSACTIONS ON INTELLIGENT TRANSPORTATION SYSTEMS
+14
+[44] A. Geiger, P. Lenz, C. Stiller, and R. Urtasun, “Vision meets robotics: The kitti dataset,” The International Journal of Robotics Research, vol. 32, no. 11, pp. 1231–1237, 2013.
+[45] J. Behley, M. Garbade, A. Milioto, J. Quenzel, S. Behnke, C. Stachniss, and J. Gall, “Semantickit: A dataset for semantic scene understanding of lidar sequences,” in Proceedings of the IEEE/CVF International Conference on Computer Vision, 2019, pp. 9297–9307.
+[46] D. Zermas, I. Izaz, and N. Papanikolopoulos, “Fast segmentation of 3d point clouds: A paradigm on lidar data for autonomous vehicle applications,” in 2017 IEEE International Conference on Robotics and Automation, 2017, pp. 5067–5073.
+[47] W. Wang, E. Xie, X. Li, W. Hou, T. Lu, G. Yu, and S. Shao, “Shape robust text detection with progressive scale expansion network,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2019, pp. 9336–9345.
+[48] Z. Zhang and M. Sabuncu, “Generalized cross entropy loss for training deep neural networks with noisy labels,” Advances in Neural Information Processing Systems, vol. 31, 2018.
+[49] T.-Y. Lin, P. Goyal, R. Girshick, K. He, and P. Dollár, “Focal loss for dense object detection,” in Proceedings of the IEEE International Conference on Computer Vision, 2017, pp. 2980–2988.
+[50] S. Jadon, “A survey of loss functions for semantic segmentation,” in 2020 IEEE conference on Computational Intelligence in Bioinformatics and Computational Biology, 2020, pp. 1–7.
+[51] E. Schubert, J. Sander, M. Ester, H. P. Kriegel, and X. Xu, “Dbscan revisited, revisited: why and how you should (still) use dbscan,” ACM Transactions on Database Systems, 2017.
+[52] A. H. Lang, S. Vora, H. Caesar, L. Zhou, J. Yang, and O. Beijbom, "Pointpillars: Fast encoders for object detection from point clouds," in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2019, pp. 12697-12705.
+[53] Z. Liu, Y. Lin, Y. Cao, H. Hu, Y. Wei, Z. Zhang, S. Lin, and B. Guo, “Swin transformer: Hierarchical vision transformer using shifted windows,” in Proceedings of the IEEE/CVF International Conference on Computer Vision, 2021, pp. 10012–10022.
+[54] X. Dong, J. Bao, D. Chen, W. Zhang, N. Yu, L. Yuan, D. Chen, and B. Guo, “Cswin transformer: A general vision transformer backbone with cross-shaped windows,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2022, pp. 12 124–12 134.
+[55] NVIDIA Corporation, “NVIDIA Jetson AGX Orin: Ai at the edge,” https://developer.nvidia.com/embedded/jetson-agx-orin, 2022, accessed: January 11, 2025.
+![](images/0.jpg)
+
+Guoyang Zhao (Student Member, IEEE) received the B.Eng. degree in logistics engineering from Northeast Agricultural University, Harbin, China, in 2022, and the M.Phil. degree in robotics and autonomous systems from The Hong Kong University of Science and Technology (Guangzhou), Guangzhou, China, in 2024. He is currently pursuing the Ph.D. degree at the Intelligent Autonomous Driving Center, Robotics and Autonomous Systems Thrust, The Hong Kong University of Science and Technology, Guangzhou, China. His research inter-
+ests include computer vision, robotics navigation, and deep learning.
+![](images/1.jpg)
+
+Fulong Ma received the B.Eng. degree in automation from the University of Science and Technology of China, Hefei, China, in 2018. He is currently pursuing the Ph.D degree with the Robotics and Autonomous Systems Thrust, The Hong Kong University of Science and Technology (Guangzhou), Guangzhou, China. His research interests include computer vision, sensor calibration, and deep learning.
+![](images/2.jpg)
+
+Weiqing Qi received the B.S. degree in Computer Science from University of California, Santa Barbara, CA, USA, in 2021, and the M.Phil. degree in robotics and autonomous systems from The Hong Kong University of Science and Technology (Guangzhou), Guangzhou, China, in 2024. His current research interests include lane detection, drivable area segmentation, and semantics segmentation, etc.
+![](images/3.jpg)
+
+Yuxuan Liu received the B.Eng. degree in Mechatronic from Zhejiang University, Zhejiang, China in 2019, and the Ph.D. degree in Electronic and Computer Engineering, The Hong Kong University of Science and Technology, Hong Kong, China, in 2023. His current research interests include autonomous driving, deep learning, robotics, visual 3D object detection, visual depth prediction, etc.
+![](images/4.jpg)
+
+Ming Liu received the B.A. degree in automation from Tongji University, Shanghai, China, in 2005, and the Ph.D. degree from the Department of Mechanical and Process Engineering, ETH Zurich, Zurich, Switzerland, in 2013, supervised by Prof. Roland Siegwart. During his master's stay with Tongji University, he stayed one year with the Erlangen-Nunberg University and Fraunhofer Institute ISB, Erlangen, Germany, as a Visiting Scholar. He is currently an Associate Professor with the
+Hong Kong University of Science and Technology (Guangzhou), Guangzhou, China. He is also a founding member of Shanghai Swing Automation Ltd., Co. He is currently the Chairman of Shenzhen Unity Drive Inc., China. He has coordinated and been involved in NSF Projects and National 863-Hi-TechPlan Projects in China. From 2014 to 2015, He was an Assistant Professor with City University of Hong Kong, Hong Kong SAR, China. He was an Assistant Professor from 2017 to 2020 and an Associate Professor since 2020, with The Hong Kong University of Science and Technology, Hong Kong SAR, China.
+He has published several papers in top journals including IEEE Transactions on Robotics and International Journal of Robotics Research. He was an Associate Editor for IEEE Robotics and Automation Letters, IET CyberSystems and Robotics, International Journal of Robotics and Automation, IEEE IROS Conference 2018, 2019 and 2020. He served as a Guest Editor of special issues in IEEE Transactions on Automation Science and Engineering. His research interests include dynamic environment modeling, deep learning for robotics, 3-D mapping, machine learning, and visual control.
+![](images/5.jpg)
+
+Jun Ma (Senior Member, IEEE) received the B.Eng. degree with First Class Honours in electrical and electronic engineering from Nanyang Technological University, Singapore, in 2014, and the Ph.D. degree in electrical and computer engineering from the National University of Singapore, Singapore, in 2018. From 2018 to 2021, he held several positions at the National University of Singapore; University College London, London, U.K.; University of California, Berkeley, Berkeley, CA, USA; and Harvard University; Cambridge, MA, USA. He is currently an
+Assistant Professor with the Department of Autonomous Systems Thrust, The Hong Kong University of Science and Technology (Guangzhou), Guangzhou, China, and also with the Division of Emerging Interdisciplinary Areas, The Hong Kong University of Science and Technology, Hong Kong SAR, China. He is also the Director of Intelligent Autonomous Driving Center, The Hong Kong University of Science and Technology (Guangzhou), Guangzhou, China. His research interests include motion planning and control for robotics and autonomous driving.
