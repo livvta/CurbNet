@@ -11,3 +11,8 @@ logs_dir/*.txt
 *.nbc
 *.nbi
 __pycache__/
+
+# Local environment
+.agents/
+.codex/
+.vscode/
