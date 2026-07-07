@@ -6,12 +6,9 @@
   /home/ant/CurbNet/data/3D-Curb/00/velodyne/000008.bin \
   --label-folder /home/ant/CurbNet/data/3D-Curb/00/labels
 
-# 多个文件
 /home/ant/miniconda3/envs/curbnet/bin/python plot_bin_z_stats.py \
-  /home/ant/CurbNet/data/NRS/transfer_velodyne/20220705102852_Sunny_City_Day_0163.bin \
-  /home/ant/CurbNet/data/NRS/transfer_velodyne/20220705102852_Sunny_City_Day_2224.bin \
+  /home/ant/CurbNet/data/NRS/transfer_velodyne/20220705102852_Sunny_City_Day_4126.bin \
   --label-folder /home/ant/CurbNet/data/NRS/transfer_labels
-
 
 # 目录或 glob
 /home/ant/miniconda3/envs/curbnet/bin/python plot_bin_z_stats.py \
@@ -19,8 +16,6 @@
   -o /tmp/nrs_z_distribution.svg
 
 """
-
-
 
 
 import argparse

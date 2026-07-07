@@ -3,9 +3,6 @@ data/
 Lcdet-NRS-Dataset.zip
 *.pdf
 *.pt
-*.pth
-*.ckpt
-logs_dir/*.txt
 .vscode/settings.json
 *.pyc
 *.nbc
