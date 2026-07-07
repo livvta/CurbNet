@@ -8,26 +8,27 @@ CurbNet 实时交互式推理可视化工具
 用法:
 sh visualize_demo_interactive.sh \
     --demo-folder /home/ant/CurbNet/data/3D-Curb/07/velodyne \
-    --axis-size 5 \
+    --demo-label-folder /home/ant/CurbNet/data/3D-Curb/07/labels \
+    --no-input-crop \
     -y config/semantickitti-curb_0.2_12gb.yaml
     
 sh visualize_demo_interactive.sh \
   --demo-folder /home/ant/CurbNet/data/NRS/transfer_velodyne \
-  --start-frame 300 \
-  --z-shift -1.5 \
-  --near-thin-radius 20 \
-  --near-thin-keep 0.25 \
-  --axis-size 5 \
+  --demo-label-folder /home/ant/CurbNet/data/NRS/transfer_labels \
+  --start-frame 380 \
+  --z-shift -1.8 \
+  --no-input-crop \
   -y config/semantickitti-curb_0.2_12gb.yaml
     
 sh visualize_demo_interactive.sh \
     --demo-folder /home/ant/ros2_humble/dataset/industrial_bin \
-    --axis-size 5 \
+    --no-input-crop \
     -y config/semantickitti-curb_0.2_12gb.yaml
 
 键盘:
     N/D/→  下一帧（实时推理）
     P/A/←  上一帧（从缓存读取）
+    L      切换预测结果/真实标签
     +/-    调整点大小
     Q/Esc  退出
 
@@ -81,10 +82,71 @@ def labels_to_colors(labels, color_map):
     return colors
 
 
+def summarize_gt_curb_region(region_mask, per_point_pred, per_point_curb_prob,
+                             per_point_curb_logit, per_point_other_logit,
+                             num_class, label_names):
+    count = int(region_mask.sum())
+    if count == 0:
+        return None
+
+    pred_counts = {}
+    region_pred = per_point_pred[region_mask]
+    for cls_id in range(num_class):
+        cls_count = int((region_pred == cls_id).sum())
+        if cls_count > 0:
+            pred_counts[label_names.get(cls_id, f'class_{cls_id}')] = cls_count
+
+    summary = {
+        "count": count,
+        "pred_counts": pred_counts,
+    }
+    if per_point_curb_prob is not None:
+        summary.update({
+            "curb_prob_mean": float(per_point_curb_prob[region_mask].mean()),
+            "curb_prob_max": float(per_point_curb_prob[region_mask].max()),
+            "curb_logit_mean": float(per_point_curb_logit[region_mask].mean()),
+            "curb_margin_mean": float((per_point_curb_logit[region_mask] - per_point_other_logit[region_mask]).mean()),
+            "curb_margin_max": float((per_point_curb_logit[region_mask] - per_point_other_logit[region_mask]).max()),
+        })
+    return summary
+
+
+def format_gt_curb_summary(name, summary):
+    if summary is None:
+        return f"    {name:10s}: n=0"
+
+    count = summary["count"]
+    pred_counts = summary["pred_counts"]
+    pred_text = ", ".join(
+        f"{pred_name}:{pred_count}({pred_count / count * 100:.1f}%)"
+        for pred_name, pred_count in pred_counts.items()
+    )
+    text = f"    {name:10s}: n={count:,} pred=[{pred_text}]"
+    if "curb_prob_mean" in summary:
+        text += (
+            f" prob_mean={summary['curb_prob_mean']:.3e}"
+            f" prob_max={summary['curb_prob_max']:.3e}"
+            f" margin_mean={summary['curb_margin_mean']:.3f}"
+            f" margin_max={summary['curb_margin_max']:.3f}"
+        )
+    return text
+
+
+def build_class_stats(labels, num_class, label_names):
+    total_pts = len(labels)
+    stats = {}
+    for cls_id in range(num_class):
+        name = label_names.get(cls_id, f'class_{cls_id}')
+        cnt = int((labels == cls_id).sum())
+        stats[name] = (cnt, cnt / total_pts * 100 if total_pts > 0 else 0.0)
+    return stats
+
+
 class RuntimePreprocessDataset:
     """在内存中对 demo 点云做坐标变换、裁剪和强度归一化，不保存新文件。"""
     def __init__(self, base_dataset, min_bound, max_bound, xy_transform="none",
-                 x_shift=0.0, y_shift=0.0, z_shift=0.0, intensity_scale=1.0):
+                 x_shift=0.0, y_shift=0.0, z_shift=0.0, intensity_scale=1.0,
+                 crop_input=True, normalize_intensity=True):
         self.base_dataset = base_dataset
         self.im_idx = base_dataset.im_idx
         self.min_radius = float(min_bound[0])
@@ -96,6 +158,8 @@ class RuntimePreprocessDataset:
         self.y_shift = float(y_shift)
         self.z_shift = float(z_shift)
         self.intensity_scale = float(intensity_scale)
+        self.crop_input = bool(crop_input)
+        self.normalize_intensity = bool(normalize_intensity)
 
     def __len__(self):
         return len(self.base_dataset)
@@ -132,20 +196,21 @@ class RuntimePreprocessDataset:
         if self.z_shift != 0.0:
             xyz[:, 2] += self.z_shift
 
-        radius = np.linalg.norm(xyz[:, :2], axis=1)
-        mask = (
-            (radius >= self.min_radius) & (radius <= self.max_radius) &
-            (xyz[:, 2] >= self.min_z) & (xyz[:, 2] <= self.max_z)
-        )
+        if self.crop_input:
+            radius = np.linalg.norm(xyz[:, :2], axis=1)
+            mask = (
+                (radius >= self.min_radius) & (radius <= self.max_radius) &
+                (xyz[:, 2] >= self.min_z) & (xyz[:, 2] <= self.max_z)
+            )
 
-        if mask.any():
-            xyz = xyz[mask]
-            labels = labels[mask]
-            if sig is not None:
-                sig = sig[mask]
+            if mask.any():
+                xyz = xyz[mask]
+                labels = labels[mask]
+                if sig is not None:
+                    sig = sig[mask]
 
         if sig is not None:
-            if sig.shape[0] > 0 and sig.max() > 1.0:
+            if self.normalize_intensity and sig.shape[0] > 0 and sig.max() > 1.0:
                 sig /= 255.0
             if self.intensity_scale != 1.0:
                 sig *= self.intensity_scale
@@ -157,8 +222,9 @@ class RuntimePreprocessDataset:
 
 # ============ 数据集构建（从 demo_folder_focal.py 完整复用）============
 def build_dataset(dataset_config, data_dir, grid_size=[480, 360, 32], demo_label_dir=None,
-                  preprocess_input=True, xy_transform="none", x_shift=0.0, y_shift=0.0,
-                  z_shift=0.0, intensity_scale=1.0):
+                  xy_transform="none", x_shift=0.0, y_shift=0.0,
+                  z_shift=0.0, intensity_scale=1.0, crop_input=True,
+                  normalize_intensity=True):
     if demo_label_dir == '':
         imageset = "demo"
     else:
@@ -169,17 +235,18 @@ def build_dataset(dataset_config, data_dir, grid_size=[480, 360, 32], demo_label
     demo_pt_dataset = SemKITTI_demo(data_dir, imageset=imageset,
                                     return_ref=True, label_mapping=label_mapping,
                                     demo_label_path=demo_label_dir)
-    if preprocess_input:
-        demo_pt_dataset = RuntimePreprocessDataset(
-            demo_pt_dataset,
-            min_bound=dataset_config['min_volume_space'],
-            max_bound=dataset_config['max_volume_space'],
-            xy_transform=xy_transform,
-            x_shift=x_shift,
-            y_shift=y_shift,
-            z_shift=z_shift,
-            intensity_scale=intensity_scale,
-        )
+    demo_pt_dataset = RuntimePreprocessDataset(
+        demo_pt_dataset,
+        min_bound=dataset_config['min_volume_space'],
+        max_bound=dataset_config['max_volume_space'],
+        xy_transform=xy_transform,
+        x_shift=x_shift,
+        y_shift=y_shift,
+        z_shift=z_shift,
+        intensity_scale=intensity_scale,
+        crop_input=crop_input,
+        normalize_intensity=normalize_intensity,
+    )
 
     demo_dataset = get_model_class(dataset_config['dataset_type'])(
         demo_pt_dataset,
@@ -280,19 +347,24 @@ def main(args):
         dataset_config, args.demo_folder,
         grid_size=model_config['output_shape'],
         demo_label_dir=args.demo_label_folder,
-        preprocess_input=args.input_preprocess,
         xy_transform=args.xy_transform,
         x_shift=args.x_shift,
         y_shift=args.y_shift,
         z_shift=args.z_shift,
-        intensity_scale=args.intensity_scale)
-    if args.input_preprocess:
-        print("[INFO] 输入预处理顺序: 坐标变换/平移 -> r/z 裁剪 -> intensity > 1 自动除以 255；"
-              f"裁剪 r=[{dataset_config['min_volume_space'][0]}, {dataset_config['max_volume_space'][0]}], "
-              f"z=[{dataset_config['min_volume_space'][2]}, {dataset_config['max_volume_space'][2]}]；"
-              f"xy_transform={args.xy_transform}, "
-              f"shift=({args.x_shift}, {args.y_shift}, {args.z_shift}), "
-              f"intensity_scale={args.intensity_scale}")
+        intensity_scale=args.intensity_scale,
+        crop_input=args.input_crop,
+        normalize_intensity=args.intensity_normalize)
+    crop_desc = (
+        f"r/z 裁剪 r=[{dataset_config['min_volume_space'][0]}, {dataset_config['max_volume_space'][0]}], "
+        f"z=[{dataset_config['min_volume_space'][2]}, {dataset_config['max_volume_space'][2]}]"
+        if args.input_crop else "不做 r/z 裁剪"
+    )
+    intensity_desc = "intensity > 1 自动除以 255" if args.intensity_normalize else "不做 intensity 归一化"
+    print("[INFO] 输入预处理顺序: 坐标变换/平移 -> "
+          f"{crop_desc} -> {intensity_desc}；"
+          f"xy_transform={args.xy_transform}, "
+          f"shift=({args.x_shift}, {args.y_shift}, {args.z_shift}), "
+          f"intensity_scale={args.intensity_scale}")
 
     # 文件路径列表（与 DataLoader 顺序一致，shuffle=False）
     bin_paths = list(demo_pt_dataset.im_idx)
@@ -303,8 +375,10 @@ def main(args):
         print(f"[WARN] start-frame 超出范围，改为 Frame {start_idx + 1}")
 
     # --- 实时推理 + 交互式可视化 ---
-    cache = {}          # frame_idx → (xyz, pred_colors, class_stats)
+    cache = {}          # frame_idx → inference/label display data
     current_idx = -1    # 当前显示的帧索引
+    show_gt_labels = [False]
+    has_gt_labels = args.demo_label_folder != ''
     command_queue = queue.Queue()
     command_stop = threading.Event()
 
@@ -389,9 +463,9 @@ def main(args):
             per_point_pred = predict_labels_np[b, grid[b][:, 0], grid[b][:, 1], grid[b][:, 2]]
             if curb_probs_np is not None:
                 per_point_curb_prob = curb_probs_np[b, grid[b][:, 0], grid[b][:, 1], grid[b][:, 2]]
-                per_point_logits = predict_logits_np[b, :, grid[b][:, 0], grid[b][:, 1], grid[b][:, 2]]
-                per_point_curb_logit = per_point_logits[1]
-                per_point_other_logit = np.delete(per_point_logits, 1, axis=0).max(axis=0)
+                per_point_curb_logit = predict_logits_np[b, 1, grid[b][:, 0], grid[b][:, 1], grid[b][:, 2]]
+                per_point_other_logits = np.delete(predict_logits_np[b], 1, axis=0)
+                per_point_other_logit = per_point_other_logits[:, grid[b][:, 0], grid[b][:, 1], grid[b][:, 2]].max(axis=0)
                 curb_prob_stats = {
                     "mean": float(per_point_curb_prob.mean()),
                     "max": float(per_point_curb_prob.max()),
@@ -404,8 +478,7 @@ def main(args):
                 curb_prob_stats = None
 
             # 逆映射到原始标签
-            inv_labels = np.vectorize(inv_learning_map.__getitem__)(per_point_pred)
-            inv_labels = inv_labels.astype(np.uint32)
+            inv_labels = np.vectorize(inv_learning_map.__getitem__)(per_point_pred).astype(np.uint32)
 
             # 从 pt_fea 提取 XYZ（col 5=z, 6=x, 7=y）
             # pt_fea 结构: [d_rho, d_phi, d_z, rho, phi, z, x, y, intensity]
@@ -415,34 +488,99 @@ def main(args):
                 pt_fea[b][:, 5],  # z
             ], axis=1)
 
-            colors = labels_to_colors(inv_labels, color_map)
+            gt_curb_stats = None
+            gt_labels = np.asarray(pt_labs[b]).reshape(-1)
+            gt_curb_mask = gt_labels == 1  # raw label 3 is mapped to train class 1 (curb)
+            if gt_curb_mask.any():
+                rho = np.linalg.norm(xyz[:, :2], axis=1)
+                gt_curb_stats = {
+                    "all": summarize_gt_curb_region(
+                        gt_curb_mask, per_point_pred, per_point_curb_prob if curb_probs_np is not None else None,
+                        per_point_curb_logit if curb_probs_np is not None else None,
+                        per_point_other_logit if curb_probs_np is not None else None,
+                        num_class, SemKITTI_label_name),
+                    f"x<{args.gt_near_x:g}": summarize_gt_curb_region(
+                        gt_curb_mask & (xyz[:, 0] < args.gt_near_x),
+                        per_point_pred, per_point_curb_prob if curb_probs_np is not None else None,
+                        per_point_curb_logit if curb_probs_np is not None else None,
+                        per_point_other_logit if curb_probs_np is not None else None,
+                        num_class, SemKITTI_label_name),
+                    f"x>={args.gt_near_x:g}": summarize_gt_curb_region(
+                        gt_curb_mask & (xyz[:, 0] >= args.gt_near_x),
+                        per_point_pred, per_point_curb_prob if curb_probs_np is not None else None,
+                        per_point_curb_logit if curb_probs_np is not None else None,
+                        per_point_other_logit if curb_probs_np is not None else None,
+                        num_class, SemKITTI_label_name),
+                    f"rho<{args.gt_near_rho:g}": summarize_gt_curb_region(
+                        gt_curb_mask & (rho < args.gt_near_rho),
+                        per_point_pred, per_point_curb_prob if curb_probs_np is not None else None,
+                        per_point_curb_logit if curb_probs_np is not None else None,
+                        per_point_other_logit if curb_probs_np is not None else None,
+                        num_class, SemKITTI_label_name),
+                    f"rho>={args.gt_near_rho:g}": summarize_gt_curb_region(
+                        gt_curb_mask & (rho >= args.gt_near_rho),
+                        per_point_pred, per_point_curb_prob if curb_probs_np is not None else None,
+                        per_point_curb_logit if curb_probs_np is not None else None,
+                        per_point_other_logit if curb_probs_np is not None else None,
+                        num_class, SemKITTI_label_name),
+                }
 
-            # 类别统计
-            total_pts = len(per_point_pred)
-            stats = {}
-            for cls_id in range(num_class):
-                name = SemKITTI_label_name.get(cls_id, f'class_{cls_id}')
-                cnt = (per_point_pred == cls_id).sum()
-                stats[name] = (cnt, cnt / total_pts * 100)
+            pred_colors = labels_to_colors(inv_labels, color_map)
+            pred_stats = build_class_stats(per_point_pred, num_class, SemKITTI_label_name)
 
-            cache[idx] = (xyz, colors, stats, inv_labels, curb_prob_stats)
+            gt_colors = None
+            gt_stats = None
+            if has_gt_labels:
+                inv_gt_labels = np.vectorize(inv_learning_map.__getitem__)(gt_labels).astype(np.uint32)
+                gt_colors = labels_to_colors(inv_gt_labels, color_map)
+                gt_stats = build_class_stats(gt_labels, num_class, SemKITTI_label_name)
+
+            cache[idx] = {
+                "xyz": xyz,
+                "pred_colors": pred_colors,
+                "gt_colors": gt_colors,
+                "pred_stats": pred_stats,
+                "gt_stats": gt_stats,
+                "pred_labels_raw": inv_labels,
+                "curb_prob_stats": curb_prob_stats,
+                "gt_curb_stats": gt_curb_stats,
+            }
 
         del predict_labels, vox_label, grid, pt_labs, pt_fea
 
         return cache.get(idx)
 
-    def display_frame(idx):
+    def display_frame(idx, reset_view=False):
         """在 Open3D 中显示第 idx 帧"""
         nonlocal current_idx
         result = get_or_infer(idx)
         if result is None:
             return
 
-        if len(result) == 4:
+        if isinstance(result, dict):
+            xyz = result["xyz"]
+            curb_prob_stats = result["curb_prob_stats"]
+            gt_curb_stats = result["gt_curb_stats"]
+            if show_gt_labels[0] and result["gt_colors"] is not None:
+                colors = result["gt_colors"]
+                stats = result["gt_stats"]
+                view_name = "GT label"
+            else:
+                colors = result["pred_colors"]
+                stats = result["pred_stats"]
+                view_name = "prediction"
+        elif len(result) == 4:
             xyz, colors, stats, _ = result
             curb_prob_stats = None
-        else:
+            gt_curb_stats = None
+            view_name = "prediction"
+        elif len(result) == 5:
             xyz, colors, stats, _, curb_prob_stats = result
+            gt_curb_stats = None
+            view_name = "prediction"
+        else:
+            xyz, colors, stats, _, curb_prob_stats, gt_curb_stats = result
+            view_name = "prediction"
         current_idx = idx
         bin_name = os.path.basename(bin_paths[idx])
 
@@ -458,6 +596,7 @@ def main(args):
         # 打印信息
         print(f"\n{'='*50}")
         print(f"  Frame {idx+1}/{total_frames}  |  {bin_name}")
+        print(f"  View: {view_name}")
         print(f"  Points: {len(xyz):,}")
         if curb_prob_stats is not None:
             print("  Curb softmax: "
@@ -468,12 +607,17 @@ def main(args):
                   f"mean={curb_prob_stats['logit_mean']:.3f}, "
                   f"max={curb_prob_stats['logit_max']:.3f}, "
                   f"best_margin={curb_prob_stats['margin_max']:.3f}")
+        if gt_curb_stats is not None:
+            print("  GT curb(label=3 -> class 1):")
+            for region_name, region_summary in gt_curb_stats.items():
+                print(format_gt_curb_summary(region_name, region_summary))
         for name, (cnt, pct) in stats.items():
             if pct > 0.01:
                 print(f"    {name:12s}: {pct:5.1f}% ({cnt:,})")
         print(f"{'='*50}")
 
-        vis.reset_view_point(True)
+        if reset_view:
+            vis.reset_view_point(True)
 
     def on_next(vis_ptr):
         nonlocal current_idx
@@ -517,6 +661,22 @@ def main(args):
         args.point_size = max(0.5, args.point_size - 0.5)
         render_opt.point_size = args.point_size
         print(f"[INFO] point_size = {args.point_size}")
+        return True
+
+    def on_reset_view(vis_ptr):
+        vis.reset_view_point(True)
+        print("[INFO] reset view")
+        return True
+
+    def on_toggle_labels(vis_ptr):
+        if not has_gt_labels:
+            print("[WARN] 当前没有真实标签；请运行时传入 --demo-label-folder")
+            return True
+        show_gt_labels[0] = not show_gt_labels[0]
+        mode = "GT label" if show_gt_labels[0] else "prediction"
+        print(f"[INFO] display mode = {mode}")
+        if current_idx >= 0:
+            display_frame(current_idx)
         return True
 
     def on_animation(vis_ptr):
@@ -565,16 +725,21 @@ def main(args):
     vis.register_key_callback(ord('='), on_size_up)
     vis.register_key_callback(ord('+'), on_size_up)
     vis.register_key_callback(ord('-'), on_size_down)
+    vis.register_key_callback(ord('R'), on_reset_view)
+    vis.register_key_callback(ord('r'), on_reset_view)
+    vis.register_key_callback(ord('L'), on_toggle_labels)
+    vis.register_key_callback(ord('l'), on_toggle_labels)
     vis.register_animation_callback(on_animation)
 
     # --- 显示起始帧（实时推理）---
     print(f"\n[INFO] 正在推理起始帧 Frame {start_idx + 1}...")
     t0 = time.time()
-    display_frame(start_idx)
+    display_frame(start_idx, reset_view=True)
     print(f"[INFO] 起始帧推理耗时: {time.time()-t0:.1f}s")
     print(f"\n{'='*60}")
     print(f"  操作:  N/D/→ 下一帧  |  P/A/← 上一帧")
-    print(f"        +/- 点大小     |  Q/Esc  退出")
+    print(f"        L 预测/真值切换 |  +/- 点大小")
+    print(f"        R 重置视角      |  Q/Esc  退出")
     print(f"  终端:  输入 g 123 跳转到第 123 帧")
     print(f"  鼠标:  拖拽旋转 | 滚轮缩放 | 右键平移")
     print(f"{'='*60}\n")
@@ -590,33 +755,46 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CurbNet 实时交互式推理可视化")
     parser.add_argument('-y', '--config_path', default='config/semantickitti-curb_0.2_12gb.yaml')
     parser.add_argument('--demo-folder', type=str, required=True,
-                        help='包含 .bin 点云文件的文件夹路径')
+                        help='点云文件夹路径')
     parser.add_argument('--demo-label-folder', type=str, default='',
-                        help='(可选) 标签文件夹路径')
+                        help='标签文件夹路径')
     parser.add_argument('--device', type=str, default='cuda:0')
+    
     parser.add_argument('--point-size', type=float, default=1.5,
-                        help='点大小 (默认 1.5)')
-    parser.add_argument('--axis-size', type=float, default=3.0,
-                        help='Open3D 原点坐标系大小 (默认 3.0)')
+                        help='点云大小')
+    parser.add_argument('--axis-size', type=float, default=5.0,
+                        help='原点坐标系大小')
     parser.add_argument('--no-axis', dest='show_axis', action='store_false',
-                        help='关闭 Open3D 原点坐标系')
+                        help='原点坐标系开关')
+    
     parser.add_argument('--start-frame', type=int, default=1,
-                        help='起始帧号，1 表示第一帧 (默认 1)')
+                        help='起始帧号')
+    
     parser.add_argument('--xy-transform', default='none',
                         choices=['none', 'swap', 'rot90', 'rot-90', 'flip-x', 'flip-y'],
-                        help='推理前对 xy 坐标做运行时变换，用于测试坐标系差异')
+                        help='推理前坐标系变换 (swap:x/y 互换, rot90:逆时针转90°)')
     parser.add_argument('--x-shift', type=float, default=0.0,
                         help='推理前给 x 坐标加偏移量')
     parser.add_argument('--y-shift', type=float, default=0.0,
                         help='推理前给 y 坐标加偏移量')
     parser.add_argument('--z-shift', type=float, default=0.0,
-                        help='推理前给 z 坐标加偏移量，用于测试高度基准差异')
+                        help='推理前给 z 坐标加偏移量')
+    
     parser.add_argument('--intensity-scale', type=float, default=1.0,
-                        help='强度归一化后再乘以该系数，用于测试强度尺度差异')
-    parser.add_argument('--no-input-preprocess', dest='input_preprocess',
+                        help='强度值再乘以该系数，用于测试强度尺度差异')
+    parser.add_argument('--no-intensity-normalize', dest='intensity_normalize',
                         action='store_false',
-                        help='关闭内存中的 intensity 归一化和 r/z 裁剪')
-    parser.set_defaults(input_preprocess=True)
+                        help='关闭 intensity > 1 自动除以 255；默认开启')
+    parser.add_argument('--no-input-crop', dest='input_crop',
+                        action='store_false',
+                        help='关闭运行时 r/z 裁剪')
+    parser.add_argument('--gt-near-x', type=float, default=15.0,
+                        help='有标签时，统计 GT curb 的近处 x 阈值 (默认 15m)')
+    parser.add_argument('--gt-near-rho', type=float, default=15.0,
+                        help='有标签时，统计 GT curb 的近处 rho 阈值 (默认 15m)')
+    
+    parser.set_defaults(intensity_normalize=True)
+    parser.set_defaults(input_crop=True)
     parser.set_defaults(show_axis=True)
     args = parser.parse_args()
 
